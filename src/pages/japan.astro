@@ -2,37 +2,240 @@
 import Layout from '../layouts/Layout.astro';
 import data from '../data/japan.json';
 const pillars = data.pillars;
+const seasonMap = {
+  history: 'autumn', parenting: 'winter', stories: 'spring',
+  belief: 'autumn', rituals: 'winter', festivals: 'spring',
+  music: 'summer', literature: 'summer', dance: 'summer'
+};
 ---
 
 <Layout title="Japan — Spirit Mirror">
 
-<!-- Hero -->
-<section class="jp-hero">
-  <div class="jp-hero-bg" aria-hidden="true">
-    <div class="jp-hero-mountain"></div>
-    <div class="jp-hero-circle"></div>
-  </div>
-  <div class="jp-hero-inner">
-    <div class="jp-hero-tag">🇯🇵 Culture · Heritage · Identity</div>
-    <h1 class="jp-hero-title">
-      <span class="jp-h1-nihon">日本</span>
-    </h1>
-    <p class="jp-hero-subtitle">Two thousand six hundred years of refinement, resilience, and the art of impermanence — explored through the cultural elements that define the Japanese soul.</p>
-    <div class="jp-hero-stats">
-      <div class="jp-stat"><span class="jp-stat-n">2,600</span><span class="jp-stat-l">Years of History</span></div>
-      <div class="jp-stat-divider" aria-hidden="true"></div>
-      <div class="jp-stat"><span class="jp-stat-n">125M</span><span class="jp-stat-l">People</span></div>
-      <div class="jp-stat-divider" aria-hidden="true"></div>
-      <div class="jp-stat"><span class="jp-stat-n">9</span><span class="jp-stat-l">Cultural Elements</span></div>
+<!-- ═══════════════════════════════════════════════════════════
+     FULL-SCREEN IMMERSIVE CULTURAL MODAL
+     Two-column: 45% visual | 55% content
+══════════════════════════════════════════════════════════════ -->
+<div id="jp-modal" class="jp-modal" role="dialog" aria-modal="true" aria-labelledby="jp-modal-title" hidden>
+  <div class="jp-modal-backdrop"></div>
+  <div class="jp-modal-layout">
+    <!-- LEFT: Visual Panel -->
+    <div class="jp-modal-visual" id="jp-modal-visual">
+      <!-- Seigaiha wave band at top -->
+      <div class="jp-modal-wave" aria-hidden="true">
+        <svg viewBox="0 0 400 48" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <path d="M0 24 Q20 0 40 24 T80 24 T120 24 T160 24 T200 24 T240 24 T280 24 T320 24 T360 24 T400 24" fill="none" stroke="rgba(196,30,58,0.18)" stroke-width="2"/>
+          <path d="M0 36 Q20 12 40 36 T80 36 T120 36 T160 36 T200 36 T240 36 T280 36 T320 36 T360 36 T400 36" fill="none" stroke="rgba(196,30,58,0.10)" stroke-width="1.5"/>
+          <path d="M-20 48 Q0 24 20 48 T60 48 T100 48 T140 48 T180 48 T220 48 T260 48 T300 48 T340 48 T380 48 T420 48" fill="none" stroke="rgba(196,30,58,0.06)" stroke-width="1"/>
+        </svg>
+      </div>
+      <!-- Hero image wrapper -->
+      <div class="jp-modal-hero-wrap" id="jp-modal-hero-wrap">
+        <img class="jp-modal-hero-img" id="jp-modal-hero-img" src="" alt="" />
+        <video class="jp-modal-hero-video" id="jp-modal-hero-video" preload="metadata"></video>
+        <!-- Fallback gradient when no hero image/video -->
+        <div class="jp-modal-visual-fallback" id="jp-modal-visual-fallback"></div>
+        <!-- Bottom overlay gradient -->
+        <div class="jp-modal-hero-overlay" aria-hidden="true"></div>
+      </div>
+      <!-- Inline media (optional) -->
+      <div class="jp-modal-media" id="jp-modal-media"></div>
+      <!-- Kumiko watermark -->
+      <div class="jp-modal-kumiko" aria-hidden="true">
+        <svg viewBox="0 0 80 70" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="40,2 76,52 4,52" fill="none" stroke="white" stroke-width="1.2"/>
+          <polygon points="40,68 4,18 76,18" fill="none" stroke="white" stroke-width="1.2"/>
+          <circle cx="40" cy="35" r="3.5" fill="white"/>
+        </svg>
+      </div>
+    </div>
+    <!-- RIGHT: Content Panel -->
+    <div class="jp-modal-content-panel">
+      <button class="jp-modal-close" id="jp-modal-close" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+      <div class="jp-modal-content">
+        <span class="jp-modal-period" id="jp-modal-period"></span>
+        <span class="jp-modal-era" id="jp-modal-era"></span>
+        <h2 class="jp-modal-title" id="jp-modal-title"></h2>
+        <div class="jp-modal-divider" aria-hidden="true">
+          <svg viewBox="0 0 240 6" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 3 Q60 0 120 3 Q180 6 240 3" fill="none" stroke="rgba(196,30,58,0.22)" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="jp-modal-body" id="jp-modal-body"></div>
+        <div class="jp-modal-img-grid" id="jp-modal-img-grid"></div>
+      </div>
     </div>
   </div>
+  <!-- Lightbox -->
+  <div class="jp-modal-lightbox" id="jp-modal-lightbox" hidden>
+    <button class="jp-modal-lightbox-close" id="jp-modal-lightbox-close" aria-label="Close image">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <button class="jp-modal-lightbox-prev" id="jp-modal-lightbox-prev" aria-label="Previous image">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <polyline points="15,18 9,12 15,6"/>
+      </svg>
+    </button>
+    <img class="jp-modal-lightbox-img" id="jp-modal-lightbox-img" src="" alt="" />
+    <p class="jp-modal-lightbox-caption" id="jp-modal-lightbox-caption"></p>
+    <button class="jp-modal-lightbox-next" id="jp-modal-lightbox-next" aria-label="Next image">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <polyline points="9,18 15,12 9,6"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     HERO — Yozora Night Sky + Fuji + Rising Sun
+     Feel: Stepping into a Japanese scroll painting at dawn
+══════════════════════════════════════════════════════════════ -->
+<section class="jp-hero">
+  <!-- Yozora night sky gradient at top -->
+  <div class="jp-yozora" aria-hidden="true"></div>
+  
+  <!-- Washi paper grain texture -->
+  <div class="jp-washi-texture" aria-hidden="true"></div>
+  
+  <!-- Rising sun radial gradient -->
+  <div class="jp-sun-gradient" aria-hidden="true"></div>
+  
+  <!-- Fuji mountain silhouette — ukiyo-e composition -->
+  <div class="jp-fuji" aria-hidden="true">
+    <svg viewBox="0 0 900 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <!-- Atmospheric haze at base — sumi-e quality -->
+      <ellipse cx="450" cy="490" rx="440" ry="35" fill="rgba(200,185,170,0.10)"/>
+      <ellipse cx="450" cy="485" rx="380" ry="20" fill="rgba(200,185,170,0.08)"/>
+      
+      <!-- Main Fuji body — organic S-curve with brush quality -->
+      <path d="M450 65
+               C480 100 535 168 585 240
+               C618 292 662 348 720 410
+               L180 410
+               C238 348 282 292 315 240
+               C365 168 420 100 450 65Z"
+            fill="#EDE5D8" opacity="0.97"/>
+      
+      <!-- Left slope shadow — natural depth, sumi-e ink wash -->
+      <path d="M450 65
+               C438 95 424 128 412 162
+               C400 128 392 100 385 75
+               C408 70 425 65 450 65Z"
+            fill="rgba(160,138,122,0.22)"/>
+      
+      <!-- Right slope — slightly lighter, atmospheric -->
+      <path d="M450 65
+               C462 95 476 128 488 162
+               C500 128 508 100 515 75
+               C492 70 475 65 450 65Z"
+            fill="rgba(180,160,145,0.12)"/>
+      
+      <!-- Snow cap — organic asymmetric blobs, not geometric -->
+      <!-- Center main snow cap -->
+      <path d="M450 65
+               C438 90 428 112 420 130
+               C430 122 440 108 450 100
+               C460 108 470 122 480 130
+               C472 112 462 90 450 65Z"
+            fill="#FFFEFB"/>
+      
+      <!-- Left snow streak — organic drip -->
+      <path d="M450 65
+               C440 85 432 105 426 122
+               C418 112 416 100 420 90
+               C430 82 440 73 450 65Z"
+            fill="#FFFEFB" opacity="0.95"/>
+      
+      <!-- Right snow streak -->
+      <path d="M450 65
+               C460 85 468 105 474 122
+               C482 112 484 100 480 90
+               C470 82 460 73 450 65Z"
+            fill="#FFFEFB" opacity="0.95"/>
+      
+      <!-- Small left snow patch -->
+      <path d="M412 148 C408 158 407 168 410 175 C403 168 403 158 412 148Z"
+            fill="#FFFEFB" opacity="0.80"/>
+      
+      <!-- Small right snow patch -->
+      <path d="M488 148 C492 158 493 168 490 175 C497 168 497 158 488 148Z"
+            fill="#FFFEFB" opacity="0.80"/>
+      
+      <!-- Subtle sumi-e contour — brush stroke quality -->
+      <path d="M450 65
+               C480 100 535 168 585 240
+               C618 292 662 348 720 410
+               L180 410
+               C238 348 282 292 315 240
+               C365 168 420 100 450 65Z"
+            fill="none" stroke="rgba(140,120,105,0.18)" stroke-width="1.5"/>
+      
+      <!-- Mist layer at base — ukiyo-e atmospheric effect -->
+      <path d="M0 430 Q225 415 450 425 Q675 435 900 420 L900 500 L0 500Z"
+            fill="rgba(245,239,230,0.4)"/>
+      <path d="M0 450 Q225 438 450 445 Q675 452 900 442 L900 500 L0 500Z"
+            fill="rgba(245,239,230,0.3)"/>
+    </svg>
+  </div>
+  
+  <!-- Seigaiha wave watermark — subtle, lower right -->
+  <div class="jp-wave-watermark" aria-hidden="true">
+    <svg viewBox="0 0 180 55" xmlns="http://www.w3.org/2000/svg" opacity="0.035">
+      <path d="M0 28 Q22.5 0 45 28 T90 28 T135 28 T180 28" fill="none" stroke="#C41E3A" stroke-width="3"/>
+      <path d="M0 42 Q22.5 14 45 42 T90 42 T135 42 T180 42" fill="none" stroke="#C41E3A" stroke-width="3"/>
+      <path d="M-22.5 56 Q0 28 22.5 56 T67.5 56 T112.5 56 T157.5 56" fill="none" stroke="#C41E3A" stroke-width="3"/>
+    </svg>
+  </div>
+
+  <div class="jp-hero-inner">
+    <!-- Tag pill — gold accent -->
+    <div class="jp-hero-tag">Culture · Heritage · Identity</div>
+    
+    <!-- Main title -->
+    <h1 class="jp-hero-title">
+      <span class="jp-h1-kanji">日本</span>
+      <span class="jp-h1-hiragana">にほん</span>
+    </h1>
+    
+    <!-- Subtitle -->
+    <p class="jp-hero-subtitle">
+      Two thousand six hundred years of refinement, resilience, and the art of impermanence — explored through the cultural elements that define the Japanese soul.
+    </p>
+    
+    <!-- Stats — staggered, like annotations in a scroll painting -->
+    <div class="jp-hero-stats">
+      <div class="jp-stat">
+        <span class="jp-stat-n">2,600</span>
+        <span class="jp-stat-l">Years of History</span>
+      </div>
+      <div class="jp-stat-divider" aria-hidden="true"></div>
+      <div class="jp-stat">
+        <span class="jp-stat-n">125M</span>
+        <span class="jp-stat-l">People</span>
+      </div>
+      <div class="jp-stat-divider" aria-hidden="true"></div>
+      <div class="jp-stat">
+        <span class="jp-stat-n">9</span>
+        <span class="jp-stat-l">Cultural Elements</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Scroll indicator — fades on scroll -->
   <div class="jp-hero-scroll" aria-hidden="true">
     <span>Scroll to explore</span>
     <span class="jp-scroll-arrow">↓</span>
   </div>
 </section>
 
-<!-- Element Navigation -->
+<!-- ═══════════════════════════════════════════════════════════
+     ELEMENT NAVIGATION — Sticky, frosted shoji glass feel
+══════════════════════════════════════════════════════════════ -->
 <nav class="jp-tabs" aria-label="Cultural elements">
   <div class="jp-tabs-inner">
     {pillars.map((p, i) => (
@@ -48,46 +251,79 @@ const pillars = data.pillars;
   </div>
 </nav>
 
-<!-- Content -->
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN CONTENT — Emakimono scroll rhythm
+══════════════════════════════════════════════════════════════ -->
 <main class="jp-main">
   {pillars.map((p, pi) => (
     <section
-      class={`jp-pillar${pi === 0 ? ' active' : ''}`}
+      class={`jp-pillar jp-pillar--${seasonMap[p.id]}${pi === 0 ? ' active' : ''}`}
       id={`element-${p.id}`}
       aria-hidden={pi !== 0 ? 'true' : 'false'}
+      data-season={seasonMap[p.id]}
     >
+      <!-- Sumi-e brush stroke divider before each section -->
+      <div class="jp-section-divider" aria-hidden="true">
+        <svg viewBox="0 0 300 6" xmlns="http://www.w3.org/2000/svg" opacity="0.12">
+          <path d="M0 3 Q75 1 150 4 Q225 7 300 3" 
+                fill="none" stroke="#1A1714" stroke-width="1.5" 
+                stroke-linecap="round"/>
+        </svg>
+      </div>
+      
+      <!-- Pillar header -->
       <div class="jp-pillar-header">
         <div class="jp-pillar-header-left">
-          <span class="jp-pillar-number">0{pi + 1}</span>
+          <span class="jp-pillar-number">{String(pi + 1).padStart(2, '0')}</span>
           <div>
             <h2 class="jp-pillar-title">{p.title}</h2>
             <p class="jp-pillar-sub">{p.entries.length} chapters across time</p>
           </div>
         </div>
-        <span class="jp-pillar-icon-lg">{p.icon}</span>
+        <!-- Kumiko-inspired geometric watermark -->
+        <div class="jp-pillar-icon-lg" aria-hidden="true">
+          <svg viewBox="0 0 60 52" xmlns="http://www.w3.org/2000/svg" opacity="0.08">
+            <polygon points="30,2 56,39 4,39" fill="none" stroke="currentColor" stroke-width="1.2"/>
+            <polygon points="30,50 4,13 56,13" fill="none" stroke="currentColor" stroke-width="1.2"/>
+            <circle cx="30" cy="26" r="2.5" fill="currentColor"/>
+          </svg>
+        </div>
       </div>
 
+      <!-- Timeline — emakimono scroll format -->
       <div class="jp-timeline">
         <div class="jp-timeline-line" aria-hidden="true"></div>
         {p.entries.map((entry, ei) => (
-          <div class={`jp-card-wrap ${ei % 2 === 0 ? 'left' : 'right'}`}>
-            <div class="jp-timeline-node" aria-hidden="true">
+          <div class={`jp-card-wrap ${ei % 2 === 0 ? 'left' : 'right'}${ei === 0 ? ' first-in-section' : ''}`}>
+            <div class="jp-timeline-node" role="button" tabindex="0" aria-label={`Open ${entry.title}`} data-period={entry.period} data-era={entry.era} data-title={entry.title} data-content={entry.content}>
               <div class="jp-node-outer"></div>
               <div class="jp-node-inner"></div>
             </div>
+            
             <article class="jp-card">
+              <!-- Asanoha pattern corner accent -->
+              <div class="jp-card-asanoha" aria-hidden="true">
+                <svg viewBox="0 0 40 35" xmlns="http://www.w3.org/2000/svg" opacity="0.05">
+                  <polygon points="20,1 38,26 2,26" fill="none" stroke="#1A1714" stroke-width="0.8"/>
+                  <polygon points="20,34 2,9 38,9" fill="none" stroke="#1A1714" stroke-width="0.8"/>
+                </svg>
+              </div>
+              
               <div class="jp-card-top">
                 <span class="jp-card-period">{entry.period}</span>
                 <span class="jp-card-era">{entry.era}</span>
               </div>
+              
               <h3 class="jp-card-title">{entry.title}</h3>
               <p class="jp-card-summary">{entry.summary}</p>
-              <div class="jp-card-content" hidden>
-                <p>{entry.content}</p>
-              </div>
-              <button class="jp-card-toggle" aria-expanded="false">
-                <span class="jp-toggle-text">Read more</span>
-                <span class="jp-toggle-icon" aria-hidden="true"></span>
+              
+              <button class="jp-card-open" data-period={entry.period} data-era={entry.era} data-title={entry.title} data-content={entry.content} aria-label={`Read more about ${entry.title}`}>
+                <span class="jp-open-text">Read full entry</span>
+                <span class="jp-open-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </span>
               </button>
             </article>
           </div>
@@ -95,9 +331,44 @@ const pillars = data.pillars;
       </div>
     </section>
   ))}
+
+  <!-- ════════════════════════════════════════════════════════
+       CALL OUT BOX — Ainu & Okinawa cultural acknowledgment
+       Styled differently: indigo/sumi tones, wave pattern
+  ════════════════════════════════════════════════════════════════ -->
+  <aside class="jp-callout" aria-label="Cultural diversity note">
+    <div class="jp-callout-inner">
+      <!-- Seigaiha wave accent in corner -->
+      <div class="jp-callout-wave" aria-hidden="true">
+        <svg viewBox="0 0 140 42" xmlns="http://www.w3.org/2000/svg" opacity="0.12">
+          <path d="M0 21 Q17.5 0 35 21 T70 21 T105 21 T140 21" fill="none" stroke="#1B2A4A" stroke-width="2"/>
+          <path d="M0 31.5 Q17.5 10.5 35 31.5 T70 31.5 T105 31.5 T140 31.5" fill="none" stroke="#1B2A4A" stroke-width="2"/>
+          <path d="M-17.5 42 Q0 21 17.5 42 T52.5 42 T87.5 42 T122.5 42" fill="none" stroke="#1B2A4A" stroke-width="2"/>
+        </svg>
+      </div>
+      
+      <p class="jp-callout-label">A note on cultural breadth</p>
+      <p class="jp-callout-text">
+        Japanese cultural identity encompasses the <strong>Ainu people of Hokkaidō</strong> — Japan's indigenous inhabitants whose culture honors the natural world through bear ceremonialism and intricate textile artistry — and the <strong>distinct Ryūkyūan culture of Okinawa</strong>, with its own language, music (sanshin string tradition), and maritime heritage. Japan is a cultural archipelago within a single national identity.
+      </p>
+    </div>
+  </aside>
 </main>
 
+<!-- ═══════════════════════════════════════════════════════════
+     FOOTER — Quiet, considered, like last brushstroke on a scroll
+══════════════════════════════════════════════════════════════ -->
 <footer class="jp-footer">
+  <!-- Torii gate silhouette — stroke only, nearly invisible -->
+  <div class="jp-footer-torii" aria-hidden="true">
+    <svg viewBox="0 0 80 56" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2 8 Q40 -2 78 8" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+      <path d="M10 16 L70 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M16 16 L16 52" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M64 16 L64 52" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+  
   <div class="jp-footer-inner">
     <a href="/" class="jp-footer-logo">Spirit Mirror</a>
     <p class="jp-footer-copy">Exploring cultures, one story at a time.</p>
@@ -108,41 +379,109 @@ const pillars = data.pillars;
 </Layout>
 
 <style>
+  /* ═══════════════════════════════════════════════════════════
+     JAPAN THEME — Complete Redesign
+     Philosophy: Ma (negative space) · Mono no aware (impermanence)
+                 Wabi-sabi (beauty in imperfection)
+  ═══════════════════════════════════════════════════════════════ */
+  
   @import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,700;0,900;1,400&display=swap');
 
-  /* ── Variables ─────────────────────────────── */
+  /* ── VARIABLES ──────────────────────────────────────────────── */
   :root {
-    --jp-ink: #c41e3a;
-    --jp-dark: #0f1118;
-    --jp-dark2: #141820;
-    --jp-red: #c41e3a;
-    --jp-red-light: #e8364f;
-    --jp-cream: #c41e3a;
-    --jp-warm: #f8f5f0;
-    --jp-gold: #c9a84c;
-    --jp-white: #fffafa;
-    --jp-text: #1a1714;
-    --jp-muted: #6b6560;
-    --jp-border: #e8ddd0;
-    --jp-node: #c41e3a;
+    /* CORE VERMILLION FAMILY (shu- 赤) */
+    --jp-vermillion:        #C41E3A;
+    --jp-vermillion-deep:    #8B1520;
+    --jp-vermillion-soft:    #D94F45;
+    --jp-vermillion-pale:    #F5C4BE;
+    
+    /* WASHI CREAM FAMILY (和紙) */
+    --jp-cream:             #FAF7F2;
+    --jp-washi:             #F5EFE6;
+    --jp-washi-dark:        #D9CEBF;
+    --jp-washi-tint:        #EDE5D8;
+    
+    /* GOLD FAMILY (kikushoku - 菊色) */
+    --jp-gold:              #C9A84C;
+    --jp-gold-pale:         #E8D49A;
+    
+    /* SUMI INK FAMILY (墨) */
+    --jp-sumi:              #1A1714;
+    --jp-sumi-light:        #2D2926;
+    
+    /* INDIGO FAMILY (ai - 藍) */
+    --jp-indigo-deep:       #1B2A4A;
+    --jp-indigo:            #2D3E6E;
+    --jp-indigo-pale:       #4A5B8C;
+    
+    /* MATCHA FAMILY (抹茶色) */
+    --jp-matcha:            #6B8E5A;
+    --jp-matcha-soft:       #8FAF7C;
+    
+    /* BENI FAMILY (紅 - rose/coral) */
+    --jp-beni:              #D94F45;
+    --jp-beni-soft:         #E8847A;
+    --jp-beni-pale:         #F5C4BE;
+    
+    /* SHIKON/PURPLE FAMILY (紫根) */
+    --jp-shikon:            #5B3A6E;
+    --jp-shikon-soft:       #8A6B9E;
+    --jp-shikon-pale:       #C4B0D4;
+    
+    /* AI BLUE (アイ blue dye) */
+    --jp-ai-blue:           #3D5A8C;
+    --jp-ai-blue-pale:      #8FAED4;
+    
+    /* SURFACES */
+    --jp-white:             #FFFDF9;
+    --jp-warm-gray:         #6B6560;
+    --jp-pale-sand:         #E8DDD0;
+    
+    /* SHADOWS — all warm-tinted, never cool gray */
+    --jp-shadow:            rgba(26, 23, 20, 0.07);
+    --jp-shadow-deep:       rgba(26, 23, 20, 0.14);
+    --jp-shadow-warm:       rgba(196, 30, 58, 0.08);
+    --jp-shadow-gold:       rgba(201, 168, 76, 0.12);
+    
+    /* SEASONAL BACKGROUNDS */
+    --jp-spring-bg:         rgba(245, 196, 190, 0.10);
+    --jp-spring-accent:      #E8847A;
+    --jp-summer-bg:         rgba(61, 90, 140, 0.06);
+    --jp-summer-accent:     #3D5A8C;
+    --jp-autumn-bg:         rgba(201, 168, 76, 0.08);
+    --jp-autumn-accent:     #8B1520;
+    --jp-winter-bg:         rgba(91, 58, 110, 0.06);
+    --jp-winter-accent:     #5B3A6E;
+    
+    /* JAPANESE EASING — deliberate, contemplative */
+    --ease-arrival:         cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-departure:       cubic-bezier(0.7, 0, 0.84, 0);
+    --ease-scroll:          cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    
+    /* FONTS */
+    --font-heading:         'Shippori Mincho', 'Noto Serif JP', serif;
+    --font-body:            'Inter', 'Noto Sans JP', sans-serif;
   }
 
-  /* ── Global overrides ───────────────────────── */
+  /* ── GLOBAL OVERRIDES ──────────────────────────────────────── */
   :global(.site-root) {
-    background: var(--jp-warm) !important;
+    background: var(--jp-cream) !important;
   }
   :global(.site-header) {
-    background: rgba(255,255,250,0.96) !important;
-    border-bottom: 1px solid rgba(196,30,58,0.1) !important;
-    box-shadow: 0 1px 8px rgba(0,0,0,0.06) !important;
+    background: rgba(250, 247, 242, 0.94) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(196, 30, 58, 0.08) !important;
+    box-shadow: 0 1px 12px rgba(26, 23, 20, 0.05) !important;
   }
   :global(.site-logo) {
-    color: var(--jp-red) !important;
-    font-family: 'Shippori Mincho', serif !important;
-    letter-spacing: 0.08em !important;
+    color: var(--jp-vermillion) !important;
+    font-family: var(--font-heading) !important;
+    letter-spacing: 0.1em !important;
+    font-weight: 700 !important;
   }
 
-  /* ── Hero ───────────────────────────────────── */
+  /* ── HERO ──────────────────────────────────────────────────── */
   .jp-hero {
     position: relative;
     min-height: 92vh;
@@ -151,122 +490,205 @@ const pillars = data.pillars;
     justify-content: center;
     align-items: center;
     text-align: center;
-    padding: 80px 24px 120px;
+    padding: 80px 24px 140px;
     overflow: hidden;
-    background: var(--jp-warm);
+    background: var(--jp-cream);
   }
 
-  .jp-hero-bg {
+  /* Yozora night sky gradient at top — dissolves into cream */
+  .jp-yozora {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 25vh;
+    background: linear-gradient(
+      180deg,
+      rgba(27, 42, 74, 0.06) 0%,
+      rgba(27, 42, 74, 0.03) 40%,
+      transparent 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Washi paper texture — subtle fiber grain */
+  .jp-washi-texture {
     position: absolute;
     inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='washi'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23washi)' opacity='0.022'/%3E%3C/svg%3E");
+    background-repeat: repeat;
     pointer-events: none;
+    z-index: 1;
   }
 
-  .jp-hero-mountain {
+  /* Rising sun radial gradient — warm, diffuse, like light through paper */
+  .jp-sun-gradient {
     position: absolute;
-    bottom: 0;
+    top: 4%;
     left: 50%;
     transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 0 50vw 40vh 50vw;
-    border-color: transparent transparent rgba(196, 30, 58, 0.08) transparent;
-  }
-
-  .jp-hero-circle {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 600px;
-    height: 600px;
+    width: min(900px, 95vw);
+    height: min(900px, 95vw);
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(196, 30, 58, 0.12) 0%, transparent 70%);
+    background: radial-gradient(
+      circle,
+      rgba(196, 30, 58, 0.18) 0%,
+      rgba(196, 30, 58, 0.10) 25%,
+      rgba(196, 30, 58, 0.04) 50%,
+      transparent 70%
+    );
+    pointer-events: none;
+    z-index: 2;
   }
 
+  .jp-sun-gradient::after {
+    content: '';
+    position: absolute;
+    inset: 20%;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      rgba(217, 79, 69, 0.10) 0%,
+      transparent 65%
+    );
+  }
+
+  /* Fuji mountain — ukiyo-e composition, organic brush quality */
+  .jp-fuji {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 58vh;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  .jp-fuji svg {
+    width: 100%;
+    height: 100%;
+    max-height: 58vh;
+  }
+
+  /* Seigaiha wave watermark */
+  .jp-wave-watermark {
+    position: absolute;
+    bottom: 10%;
+    right: 4%;
+    width: 160px;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  /* Hero inner content */
   .jp-hero-inner {
     position: relative;
-    z-index: 1;
-    max-width: 800px;
+    z-index: 10;
+    max-width: 820px;
+    padding-top: 8vh;
   }
 
+  /* Gold tag pill */
   .jp-hero-tag {
     display: inline-block;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.72rem;
+    font-family: var(--font-body);
+    font-size: 0.70rem;
     font-weight: 600;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--jp-gold);
-    border: 1px solid rgba(201, 168, 76, 0.35);
+    border: 1px solid rgba(201, 168, 76, 0.30);
     border-radius: 100px;
-    padding: 6px 18px;
-    margin-bottom: 32px;
+    padding: 7px 20px;
+    margin-bottom: 36px;
+    animation: jp-fade-in 600ms var(--ease-arrival) both;
   }
 
+  /* Main title — kanji + hiragana stack */
   .jp-hero-title {
-    margin: 0 0 28px;
-    display: block;
+    margin: 0 0 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    animation: jp-title-arrive 700ms var(--ease-arrival) 200ms both;
   }
 
-  .jp-h1-nihon {
-    font-family: 'Shippori Mincho', 'Playfair Display', serif;
-    font-size: clamp(5rem, 18vw, 11rem);
+  .jp-h1-kanji {
+    font-family: var(--font-heading);
+    font-size: clamp(4.5rem, 18vw, 11rem);
     font-weight: 700;
-    color: var(--jp-red);
-    line-height: 1;
-    letter-spacing: 0.1em;
-    text-shadow: 0 0 40px rgba(196, 30, 58, 0.15);
+    color: var(--jp-vermillion);
+    line-height: 0.95;
+    letter-spacing: 0.08em;
+    text-shadow: 0 0 80px rgba(196, 30, 58, 0.18);
   }
 
+  .jp-h1-hiragana {
+    font-family: var(--font-heading);
+    font-size: clamp(0.8rem, 2vw, 1.05rem);
+    font-weight: 400;
+    color: rgba(196, 30, 58, 0.38);
+    letter-spacing: 0.35em;
+    text-transform: lowercase;
+  }
+
+  /* Subtitle */
   .jp-hero-subtitle {
-    font-family: 'Inter', sans-serif;
-    font-size: clamp(0.95rem, 2.2vw, 1.05rem);
+    font-family: var(--font-body);
+    font-size: clamp(0.92rem, 2vw, 1.02rem);
     font-weight: 300;
-    line-height: 1.8;
-    color: rgba(60, 40, 30, 0.6);
+    line-height: 1.9;
+    color: rgba(26, 23, 20, 0.52);
     max-width: 560px;
-    margin: 0 auto 52px;
+    margin: 0 auto 56px;
+    animation: jp-fade-in 600ms var(--ease-arrival) 350ms both;
   }
 
+  /* Stats row — staggered entrance */
   .jp-hero-stats {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 32px;
+    gap: 36px;
     flex-wrap: wrap;
+    animation: jp-fade-in 600ms var(--ease-arrival) 480ms both;
   }
 
   .jp-stat {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 5px;
   }
 
   .jp-stat-n {
-    font-family: 'Shippori Mincho', serif;
-    font-size: 1.8rem;
+    font-family: var(--font-heading);
+    font-size: 1.9rem;
     font-weight: 700;
-    color: var(--jp-text);
+    color: var(--jp-sumi);
     line-height: 1;
   }
 
   .jp-stat-l {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.72rem;
+    font-family: var(--font-body);
+    font-size: 0.68rem;
     font-weight: 500;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--jp-muted);
+    color: var(--jp-warm-gray);
   }
 
   .jp-stat-divider {
     width: 1px;
-    height: 40px;
-    background: var(--jp-border);
+    height: 44px;
+    background: var(--jp-washi-dark);
   }
 
+  /* Scroll indicator */
   .jp-hero-scroll {
     position: absolute;
     bottom: 32px;
@@ -275,35 +697,48 @@ const pillars = data.pillars;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.7rem;
-    letter-spacing: 0.12em;
+    gap: 8px;
+    font-family: var(--font-body);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgba(60, 40, 30, 0.3);
-    z-index: 1;
+    color: rgba(26, 23, 20, 0.22);
+    z-index: 10;
+    transition: opacity 0.5s ease;
+    animation: jp-fade-in 500ms var(--ease-arrival) 700ms both;
   }
 
   .jp-scroll-arrow {
-    animation: jp-bounce 1.6s ease-in-out infinite;
+    animation: jp-float 2.2s ease-in-out infinite;
     display: block;
   }
 
-  @keyframes jp-bounce {
+  /* ── KEYFRAME ANIMATIONS ───────────────────────────────────── */
+  @keyframes jp-fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes jp-title-arrive {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes jp-float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(6px); }
   }
 
-  /* ── Tabs ───────────────────────────────────── */
+  /* ── TABS — Sticky frosted shoji glass ────────────────────── */
   .jp-tabs {
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(255, 255, 250, 0.96);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(196, 30, 58, 0.12);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    background: rgba(250, 247, 242, 0.93);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(196, 30, 58, 0.08);
+    box-shadow: 0 2px 16px rgba(26, 23, 20, 0.04);
   }
 
   .jp-tabs-inner {
@@ -312,7 +747,7 @@ const pillars = data.pillars;
     max-width: 1100px;
     margin: 0 auto;
     scrollbar-width: none;
-    padding: 0 8px;
+    padding: 0 12px;
   }
   .jp-tabs-inner::-webkit-scrollbar { display: none; }
 
@@ -321,121 +756,165 @@ const pillars = data.pillars;
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 16px 20px;
+    padding: 17px 20px;
     background: none;
     border: none;
     border-bottom: 2px solid transparent;
     cursor: pointer;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 500;
-    color: rgba(60, 40, 30, 0.45);
-    transition: all 0.2s;
+    font-family: var(--font-body);
+    font-size: 0.80rem;
+    font-weight: 400;
+    color: rgba(26, 23, 20, 0.38);
+    transition: color 0.2s ease, background 0.2s ease;
     white-space: nowrap;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.02em;
+    border-radius: 3px 3px 0 0;
   }
 
   .jp-tab:hover {
-    color: rgba(60, 40, 30, 0.8);
+    color: rgba(26, 23, 20, 0.70);
+    background: rgba(196, 30, 58, 0.025);
   }
 
   .jp-tab.active {
-    color: var(--jp-red);
-    border-bottom-color: var(--jp-red);
+    color: var(--jp-vermillion);
+    border-bottom-color: var(--jp-vermillion);
+    background: rgba(196, 30, 58, 0.03);
   }
 
   .jp-tab-icon {
-    font-size: 1rem;
+    font-size: 0.92rem;
     line-height: 1;
   }
 
-  /* ── Main ───────────────────────────────────── */
+  /* ── MAIN ──────────────────────────────────────────────────── */
   .jp-main {
-    max-width: 960px;
+    max-width: 980px;
     margin: 0 auto;
-    padding: 72px 24px 96px;
+    padding: 88px 24px 100px;
   }
 
-  .jp-pillar { display: none; }
+  /* Pillar sections — hidden by default */
+  .jp-pillar {
+    display: none;
+    animation: jp-pillar-in 400ms var(--ease-arrival) both;
+  }
+
   .jp-pillar.active {
     display: block;
-    animation: jp-in 0.35s ease;
   }
 
-  @keyframes jp-in {
-    from { opacity: 0; transform: translateY(16px); }
+  @keyframes jp-pillar-in {
+    from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* Element header */
+  /* Seasonal backgrounds — subtle atmospheric tinting */
+  .jp-pillar[data-season="spring"] {
+    background: linear-gradient(180deg, transparent 0%, var(--jp-spring-bg) 100%);
+  }
+  .jp-pillar[data-season="summer"] {
+    background: linear-gradient(180deg, transparent 0%, var(--jp-summer-bg) 100%);
+  }
+  .jp-pillar[data-season="autumn"] {
+    background: linear-gradient(180deg, transparent 0%, var(--jp-autumn-bg) 100%);
+  }
+  .jp-pillar[data-season="winter"] {
+    background: linear-gradient(180deg, transparent 0%, var(--jp-winter-bg) 100%);
+  }
+
+  /* Section divider — sumi-e brush stroke */
+  .jp-section-divider {
+    max-width: 300px;
+    margin: 0 auto 72px;
+    text-align: center;
+  }
+
+  .jp-section-divider svg {
+    width: 100%;
+    height: auto;
+  }
+
+  /* Pillar header */
   .jp-pillar-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 64px;
+    margin-bottom: 72px;
     padding-bottom: 24px;
-    border-bottom: 1px solid var(--jp-border);
+    border-bottom: 1px solid var(--jp-pale-sand);
   }
 
   .jp-pillar-header-left {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 24px;
   }
 
   .jp-pillar-number {
-    font-family: 'Shippori Mincho', serif;
-    font-size: 3rem;
+    font-family: var(--font-heading);
+    font-size: clamp(2.8rem, 7vw, 4.5rem);
     font-weight: 700;
-    color: var(--jp-border);
+    color: var(--jp-washi-dark);
     line-height: 1;
     user-select: none;
+    letter-spacing: -0.02em;
   }
 
   .jp-pillar-title {
-    font-family: 'Shippori Mincho', serif;
-    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    font-family: var(--font-heading);
+    font-size: clamp(1.7rem, 4vw, 2.5rem);
     font-weight: 700;
-    color: var(--jp-text);
-    margin: 0 0 4px;
-    line-height: 1.1;
+    color: var(--jp-sumi);
+    margin: 0 0 6px;
+    line-height: 1.15;
   }
 
   .jp-pillar-sub {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.8rem;
-    color: var(--jp-muted);
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    color: var(--jp-warm-gray);
     margin: 0;
     letter-spacing: 0.03em;
   }
 
   .jp-pillar-icon-lg {
-    font-size: 3rem;
-    opacity: 0.12;
+    font-size: 3.5rem;
+    opacity: 0.08;
     user-select: none;
+    color: var(--jp-sumi);
   }
 
-  /* ── Timeline ───────────────────────────────── */
+  /* ── TIMELINE ─────────────────────────────────────────────── */
   .jp-timeline {
     position: relative;
   }
 
+  /* Timeline line — fades at top and bottom */
   .jp-timeline-line {
     position: absolute;
     left: 50%;
-    top: 0; bottom: 0;
+    top: 0;
+    bottom: 0;
     width: 1px;
-    background: linear-gradient(to bottom, transparent, var(--jp-border) 5%, var(--jp-border) 95%, transparent);
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      var(--jp-washi-dark) 8%,
+      var(--jp-washi-dark) 92%,
+      transparent 100%
+    );
     transform: translateX(-50%);
   }
 
+  /* Card wrapper */
   .jp-card-wrap {
     position: relative;
     display: flex;
-    margin-bottom: 56px;
+    margin-bottom: 60px;
     opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.5s ease, transform 0.5s ease;
+    transform: translateY(16px);
+    transition: opacity 0.4s var(--ease-arrival), transform 0.4s var(--ease-arrival);
   }
 
   .jp-card-wrap.visible {
@@ -443,32 +922,36 @@ const pillars = data.pillars;
     transform: translateY(0);
   }
 
+  /* First card in section gets "unroll" treatment */
+  .jp-card-wrap.first-in-section.visible {
+    animation: jp-card-unroll 450ms var(--ease-arrival) both;
+  }
+
+  @keyframes jp-card-unroll {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
   .jp-card-wrap.left {
-    padding-right: calc(50% + 36px);
+    padding-right: calc(50% + 40px);
   }
 
   .jp-card-wrap.right {
     flex-direction: row-reverse;
-    padding-left: calc(50% + 36px);
+    padding-left: calc(50% + 40px);
   }
 
-  .jp-card-wrap.left .jp-card {
-    text-align: right;
-  }
-
-  .jp-card-wrap.left .jp-card-top {
-    justify-content: flex-end;
-  }
-
-  .jp-card-wrap.left .jp-card-toggle {
-    margin-left: auto;
-  }
-
-  /* Node */
+  /* Timeline node */
   .jp-timeline-node {
     position: absolute;
     left: 50%;
-    top: 22px;
+    top: 24px;
     transform: translateX(-50%);
     width: 16px;
     height: 16px;
@@ -482,39 +965,64 @@ const pillars = data.pillars;
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    border: 1.5px solid var(--jp-red);
-    background: var(--jp-warm);
-    transition: transform 0.2s;
+    border: 1.5px solid var(--jp-vermillion);
+    background: var(--jp-cream);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
   }
 
   .jp-card-wrap:hover .jp-node-outer {
-    transform: scale(1.3);
+    transform: scale(1.4);
+    box-shadow: 0 0 14px rgba(196, 30, 58, 0.35);
   }
 
   .jp-node-inner {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: var(--jp-red);
+    background: var(--jp-vermillion);
     position: relative;
     z-index: 1;
+    transition: box-shadow 0.18s ease;
   }
 
-  /* ── Card ───────────────────────────────────── */
+  .jp-card-wrap:hover .jp-node-inner {
+    box-shadow: 0 0 10px rgba(196, 30, 58, 0.6);
+  }
+
+  /* ── CARD ──────────────────────────────────────────────────── */
   .jp-card {
     background: var(--jp-white);
-    border: 1px solid var(--jp-border);
-    border-radius: 2px;
-    padding: 24px 28px;
+    border: 1px solid rgba(232, 221, 208, 0.7);
+    border-left: 3px solid var(--jp-vermillion);
+    border-radius: 2px 4px 2px 2px;
+    padding: 26px 30px;
     width: 100%;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.04);
+    max-width: 500px;
+    /* Horizontal tatami ratio — wider than tall */
+    aspect-ratio: 3 / 2.1;
+    max-height: 280px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 4px var(--jp-shadow), 0 3px 12px rgba(0,0,0,0.025);
     transition: box-shadow 0.25s ease, transform 0.25s ease;
-    border-left: 3px solid var(--jp-red);
+    position: relative;
+    overflow: hidden;
   }
 
   .jp-card:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 8px 32px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 14px var(--jp-shadow-deep), 0 8px 32px rgba(0,0,0,0.06);
     transform: translateY(-2px);
+  }
+
+  /* Asanoha corner accent — very subtle geometric pattern */
+  .jp-card-asanoha {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 36px;
+    height: 32px;
+    pointer-events: none;
+    opacity: 0.6;
   }
 
   .jp-card-top {
@@ -526,50 +1034,52 @@ const pillars = data.pillars;
   }
 
   .jp-card-period {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.7rem;
+    font-family: var(--font-body);
+    font-size: 0.68rem;
     font-weight: 600;
     letter-spacing: 0.06em;
-    color: var(--jp-red);
-    background: rgba(196, 30, 58, 0.08);
-    border: 1px solid rgba(196, 30, 58, 0.2);
+    color: var(--jp-vermillion);
+    background: rgba(196, 30, 58, 0.05);
+    border: 1px solid rgba(196, 30, 58, 0.12);
     border-radius: 2px;
     padding: 3px 12px;
   }
 
   .jp-card-era {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.72rem;
-    color: var(--jp-muted);
+    font-family: var(--font-body);
+    font-size: 0.70rem;
+    color: var(--jp-warm-gray);
     font-weight: 400;
   }
 
   .jp-card-title {
-    font-family: 'Shippori Mincho', serif;
-    font-size: 1.15rem;
+    font-family: var(--font-heading);
+    font-size: clamp(1.05rem, 2vw, 1.22rem);
     font-weight: 700;
-    color: var(--jp-text);
-    margin: 0 0 10px;
-    line-height: 1.4;
+    color: var(--jp-sumi);
+    margin: 0 0 12px;
+    line-height: 1.35;
   }
 
   .jp-card-summary {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.875rem;
-    line-height: 1.75;
-    color: #4b4540;
-    margin: 0 0 16px;
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    line-height: 1.88;
+    color: rgba(26, 23, 20, 0.72);
+    margin: 0 0 14px;
     font-weight: 400;
+    flex: 1;
   }
 
   .jp-card-content {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.85rem;
+    font-family: var(--font-body);
+    font-size: 0.84rem;
     line-height: 1.85;
-    color: #374150;
-    border-top: 1px solid var(--jp-border);
+    color: rgba(26, 23, 20, 0.78);
+    border-top: 1px solid var(--jp-pale-sand);
     padding-top: 14px;
     margin-bottom: 14px;
+    overflow: hidden;
   }
 
   .jp-card-content p { margin: 0; }
@@ -577,33 +1087,88 @@ const pillars = data.pillars;
   .jp-card-toggle {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
     background: none;
     border: none;
     cursor: pointer;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.78rem;
+    font-family: var(--font-body);
+    font-size: 0.76rem;
     font-weight: 600;
-    color: var(--jp-red);
+    color: var(--jp-vermillion);
     padding: 0;
     letter-spacing: 0.02em;
-    transition: color 0.2s;
+    transition: color 0.2s ease;
+    align-self: flex-start;
   }
 
   .jp-card-toggle:hover {
     color: var(--jp-gold);
   }
 
-  .jp-toggle-icon {
+  /* "Read full entry" open button */
+  .jp-card-open {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: 1px solid rgba(196, 30, 58, 0.22);
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--jp-vermillion);
+    padding: 7px 16px;
+    letter-spacing: 0.02em;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    align-self: flex-start;
+    margin-top: auto;
+  }
+
+  .jp-card-open:hover {
+    background: var(--jp-vermillion);
+    color: var(--jp-white);
+    border-color: var(--jp-vermillion);
+    transform: translateY(-1px);
+  }
+
+  .jp-card-open:active {
+    transform: translateY(0);
+  }
+
+  .jp-open-icon {
     width: 16px;
     height: 16px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+  }
+  .jp-open-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+  .jp-card-open:hover .jp-open-icon {
+    transform: translateX(3px);
+  }
+
+  /* Full-width clickable card cursor */
+  .jp-card {
+    cursor: pointer;
+  }
+
+  /* Plus/X toggle icon */
+  .jp-toggle-icon {
+    width: 17px;
+    height: 17px;
     border-radius: 50%;
     background: currentColor;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: transform 0.25s;
+    transition: transform 0.25s var(--ease-arrival);
     position: relative;
   }
 
@@ -611,30 +1176,110 @@ const pillars = data.pillars;
   .jp-toggle-icon::after {
     content: '';
     position: absolute;
-    background: white;
+    background: var(--jp-white);
     border-radius: 2px;
   }
   .jp-toggle-icon::before {
-    width: 7px; height: 1.5px;
+    width: 7px;
+    height: 1.5px;
   }
   .jp-toggle-icon::after {
-    width: 1.5px; height: 7px;
-    transition: transform 0.25s;
+    width: 1.5px;
+    height: 7px;
+    transition: transform 0.25s var(--ease-arrival);
   }
 
   .jp-card-toggle[aria-expanded="true"] .jp-toggle-icon::after {
     transform: rotate(90deg);
   }
 
-  /* ── Footer ─────────────────────────────────── */
+  /* ── CALLOUT BOX — Ainu & Okinawa ────────────────────────── */
+  .jp-callout {
+    margin-top: 96px;
+    padding: 0 4px;
+  }
+
+  .jp-callout-inner {
+    position: relative;
+    border: 1px solid rgba(27, 42, 74, 0.18);
+    border-radius: 3px;
+    padding: 28px 34px;
+    background: rgba(27, 42, 74, 0.02);
+    overflow: hidden;
+  }
+
+  /* Seigaiha wave pattern at top */
+  .jp-callout-inner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(27, 42, 74, 0.15) 0px,
+      rgba(27, 42, 74, 0.15) 8px,
+      transparent 8px,
+      transparent 16px
+    );
+  }
+
+  .jp-callout-wave {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 110px;
+    pointer-events: none;
+  }
+
+  .jp-callout-label {
+    font-family: var(--font-body);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--jp-shikon);
+    margin: 0 0 10px;
+    opacity: 0.80;
+  }
+
+  .jp-callout-text {
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    line-height: 1.82;
+    color: rgba(27, 42, 74, 0.70);
+    margin: 0;
+  }
+
+  .jp-callout-text strong {
+    color: rgba(27, 42, 74, 0.88);
+    font-weight: 600;
+  }
+
+  /* ── FOOTER ───────────────────────────────────────────────── */
   .jp-footer {
-    background: var(--jp-warm);
-    padding: 48px 24px;
-    border-top: 1px solid var(--jp-border);
+    background: var(--jp-cream);
+    padding: 52px 24px;
+    border-top: 1px solid rgba(232, 221, 208, 0.6);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Torii silhouette — stroke only, nearly invisible */
+  .jp-footer-torii {
+    position: absolute;
+    top: 50%;
+    right: 7%;
+    transform: translateY(-50%);
+    width: 68px;
+    color: var(--jp-vermillion);
+    pointer-events: none;
+    opacity: 0.07;
   }
 
   .jp-footer-inner {
-    max-width: 960px;
+    max-width: 980px;
     margin: 0 auto;
     display: flex;
     align-items: center;
@@ -644,37 +1289,417 @@ const pillars = data.pillars;
   }
 
   .jp-footer-logo {
-    font-family: 'Shippori Mincho', serif;
-    font-size: 1.2rem;
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
     font-weight: 700;
-    color: var(--jp-red);
+    color: var(--jp-vermillion);
     text-decoration: none;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
+    transition: color 0.2s ease;
+  }
+
+  .jp-footer-logo:hover {
+    color: var(--jp-vermillion-deep);
   }
 
   .jp-footer-copy {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.8rem;
-    color: var(--jp-muted);
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    color: var(--jp-warm-gray);
     margin: 0;
   }
 
   .jp-footer-back {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.8rem;
+    font-family: var(--font-body);
+    font-size: 0.78rem;
     font-weight: 500;
     color: var(--jp-gold);
     text-decoration: none;
     letter-spacing: 0.03em;
+    transition: color 0.2s ease;
   }
 
   .jp-footer-back:hover {
-    color: var(--jp-cream);
+    color: var(--jp-vermillion);
   }
 
-  /* ── Mobile ─────────────────────────────────── */
+  /* ═══════════════════════════════════════════════════════════
+     FULL-SCREEN CULTURAL MODAL
+  ═══════════════════════════════════════════════════════════════ */
+  .jp-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 0;
+  }
+
+  .jp-modal[hidden] {
+    display: none;
+  }
+
+  /* Full viewport backdrop */
+  .jp-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(18, 14, 10, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    animation: jp-modal-backdrop-in 350ms ease both;
+  }
+
+  @keyframes jp-modal-backdrop-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Two-column layout container */
+  .jp-modal-layout {
+    position: relative;
+    display: flex;
+    width: min(1400px, 100vw);
+    height: min(900px, 100vh);
+    margin: auto;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 32px 100px rgba(26, 23, 20, 0.5);
+    animation: jp-modal-layout-in 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes jp-modal-layout-in {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .jp-modal-layout.closing {
+    animation: jp-modal-layout-out 300ms cubic-bezier(0.7, 0, 0.84, 0) both;
+  }
+
+  @keyframes jp-modal-layout-out {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(20px); }
+  }
+
+  /* LEFT: Visual panel (45%) */
+  .jp-modal-visual {
+    position: relative;
+    width: 45%;
+    background: var(--jp-washi);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  /* RIGHT: Content panel (55%) */
+  .jp-modal-content-panel {
+    position: relative;
+    width: 55%;
+    background: var(--jp-washi);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Washi texture for content panel */
+  .jp-modal-content-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23w)' opacity='0.025'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Custom scrollbar for content panel */
+  .jp-modal-content-panel::-webkit-scrollbar {
+    width: 5px;
+  }
+  .jp-modal-content-panel::-webkit-scrollbar-track {
+    background: var(--jp-washi-dark);
+  }
+  .jp-modal-content-panel::-webkit-scrollbar-thumb {
+    background: rgba(196, 30, 58, 0.25);
+    border-radius: 3px;
+  }
+
+  /* Seigaiha wave band at top of left panel */
+  .jp-modal-wave {
+    position: relative;
+    height: 48px;
+    background: var(--jp-washi);
+    z-index: 2;
+  }
+
+  .jp-modal-wave svg {
+    width: 100%;
+    height: 48px;
+    display: block;
+  }
+
+  /* Modal hero section - left panel */
+  .jp-modal-hero-wrap {
+    position: absolute;
+    inset: 0;
+    top: 48px;
+    overflow: hidden;
+  }
+
+  .jp-modal-hero-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+  }
+
+  .jp-modal-hero-img[src]:not([src=""]) {
+    display: block;
+  }
+
+  .jp-modal-hero-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+  }
+
+  .jp-modal-hero-video[src]:not([src=""]) {
+    display: block;
+  }
+
+  .jp-modal-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(26,23,20,0.05) 0%, rgba(26,23,20,0.3) 100%);
+    z-index: 1;
+  }
+
+  /* Visual fallback - warm Japanese gradient when no hero image/video */
+  .jp-modal-visual-fallback {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(160deg, #8B1520 0%, #C9A84C 35%, #FAF7F2 75%);
+    z-index: 0;
+  }
+
+  .jp-modal-hero-img[src] ~ .jp-modal-visual-fallback,
+  .jp-modal-hero-video[src] ~ .jp-modal-visual-fallback {
+    display: none;
+  }
+
+  /* Washi texture overlay inside panel */
+  .jp-modal-washi {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Cfilter id='w2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='500' height='500' filter='url(%23w2)' opacity='0.03'/%3E%3C/svg%3E");
+    border-radius: inherit;
+    z-index: 0;
+  }
+
+  /* Seigaiha wave at top */
+  .jp-modal-wave-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    overflow: hidden;
+  }
+  .jp-modal-wave-top svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Close button */
+  .jp-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 10;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid rgba(196, 30, 58, 0.2);
+    background: rgba(250, 247, 242, 0.9);
+    color: var(--jp-vermillion);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+    padding: 0;
+  }
+  .jp-modal-close svg {
+    width: 17px;
+    height: 17px;
+  }
+  .jp-modal-close:hover {
+    background: var(--jp-vermillion);
+    color: var(--jp-white);
+    border-color: var(--jp-vermillion);
+    transform: scale(1.08);
+  }
+  .jp-modal-close:focus-visible {
+    outline: 2px solid var(--jp-vermillion);
+    outline-offset: 2px;
+  }
+  .jp-modal-close:active {
+    transform: scale(0.95);
+  }
+
+  /* Modal content */
+  .jp-modal-content {
+    position: relative;
+    z-index: 1;
+    padding: clamp(32px, 5vw, 64px);
+    max-width: 60ch;
+    margin: 0 auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .jp-modal-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    opacity: 0;
+    transform: translateY(6px);
+    animation: jp-modal-meta-in 320ms var(--ease-arrival) 60ms both;
+  }
+
+  @keyframes jp-modal-meta-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .jp-modal-period {
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--jp-white);
+    background: var(--jp-vermillion);
+    border-radius: 2px;
+    padding: 6px 16px;
+  }
+
+  .jp-modal-era {
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    color: #8B6914;
+    font-weight: 500;
+  }
+
+  .jp-modal-title {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    color: var(--jp-sumi);
+    line-height: 1.1;
+    margin: 0 0 28px;
+    opacity: 0;
+    transform: translateY(6px);
+    animation: jp-modal-title-in 320ms var(--ease-arrival) 120ms both;
+  }
+
+  @keyframes jp-modal-title-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .jp-modal-divider {
+    max-width: 220px;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: jp-modal-fade-in 320ms var(--ease-arrival) 180ms both;
+  }
+  .jp-modal-divider svg {
+    width: 100%;
+    height: auto;
+  }
+
+  @keyframes jp-modal-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .jp-modal-body {
+    font-family: var(--font-body);
+    font-size: clamp(1.05rem, 2vw, 1.2rem);
+    line-height: 2.0;
+    color: #1A1714;
+    font-weight: 400;
+  }
+
+  .jp-modal-body p {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  .jp-modal-body p:nth-child(1) { animation: jp-modal-para-in 300ms var(--ease-arrival) 240ms both; }
+  .jp-modal-body p:nth-child(2) { animation: jp-modal-para-in 300ms var(--ease-arrival) 290ms both; }
+  .jp-modal-body p:nth-child(3) { animation: jp-modal-para-in 300ms var(--ease-arrival) 340ms both; }
+  .jp-modal-body p:nth-child(4) { animation: jp-modal-para-in 300ms var(--ease-arrival) 390ms both; }
+  .jp-modal-body p:nth-child(5) { animation: jp-modal-para-in 300ms var(--ease-arrival) 440ms both; }
+  .jp-modal-body p:nth-child(6) { animation: jp-modal-para-in 300ms var(--ease-arrival) 490ms both; }
+  .jp-modal-body p:nth-child(n+7) { animation: jp-modal-para-in 300ms var(--ease-arrival) 540ms both; }
+
+  @keyframes jp-modal-para-in {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .jp-modal-body p {
+    margin: 0 0 1.4em;
+  }
+  .jp-modal-body p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Kumiko watermark */
+  .jp-modal-kumiko {
+    position: absolute;
+    bottom: 20px;
+    right: 24px;
+    width: 64px;
+    color: var(--jp-sumi);
+    pointer-events: none;
+    opacity: 0.06;
+  }
+
   @media (max-width: 640px) {
-    .jp-timeline-line { left: 16px; }
+    .jp-modal-panel {
+      max-height: 92vh;
+      width: 96vw;
+      padding: 0;
+    }
+    .jp-modal-content {
+      padding: 40px 28px 44px;
+    }
+    .jp-modal-close {
+      top: 12px;
+      right: 12px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .jp-modal-content {
+      padding: 36px 20px 40px;
+    }
+  }
+
+  /* ── MOBILE RESPONSIVE ────────────────────────────────────── */
+  @media (max-width: 640px) {
+    .jp-timeline-line {
+      left: 16px;
+    }
 
     .jp-card-wrap.left,
     .jp-card-wrap.right {
@@ -683,33 +1708,90 @@ const pillars = data.pillars;
       padding-right: 0;
     }
 
-    .jp-card-wrap.left .jp-card { text-align: left; }
-    .jp-card-wrap.left .jp-card-top { justify-content: flex-start; }
-    .jp-card-wrap.left .jp-card-toggle { margin-left: 0; }
+    .jp-card {
+      max-width: 100%;
+      aspect-ratio: auto;
+      max-height: none;
+      min-height: 0;
+    }
 
     .jp-timeline-node {
       left: 16px;
-      top: 18px;
+      top: 20px;
     }
 
-    .jp-tab-label { display: none; }
-    .jp-tab { padding: 14px 16px; }
-    .jp-tab-icon { font-size: 1.1rem; }
+    .jp-tab-label {
+      display: none;
+    }
+    .jp-tab {
+      padding: 15px 16px;
+    }
+    .jp-tab-icon {
+      font-size: 1.05rem;
+    }
 
-    .jp-pillar-header { flex-direction: column; align-items: flex-start; gap: 8px; }
-    .jp-pillar-icon-lg { display: none; }
+    .jp-pillar-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .jp-pillar-icon-lg {
+      display: none;
+    }
 
-    .jp-hero-stats { gap: 20px; }
-    .jp-stat-divider { height: 28px; }
+    .jp-hero-stats {
+      gap: 22px;
+    }
+    .jp-stat-divider {
+      height: 30px;
+    }
 
-    .jp-footer-inner { flex-direction: column; text-align: center; }
+    .jp-footer-inner {
+      flex-direction: column;
+      text-align: center;
+    }
+    .jp-footer-torii {
+      display: none;
+    }
+
+    .jp-h1-kanji {
+      font-size: clamp(3.8rem, 22vw, 7rem);
+    }
+
+    .jp-callout-inner {
+      padding: 22px 24px;
+    }
+
+    .jp-main {
+      padding: 64px 16px 80px;
+    }
+
+    .jp-section-divider {
+      margin-bottom: 56px;
+    }
+
+    .jp-card {
+      padding: 22px 22px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .jp-card {
+      padding: 18px 18px;
+    }
+    .jp-hero-inner {
+      padding-top: 4vh;
+    }
   }
 </style>
 
 <script>
-  // Tab switching
+  // ═══════════════════════════════════════════════════════════
+  // TAB SWITCHING — deliberate, breath-like transition
+  // ═══════════════════════════════════════════════════════════
   document.querySelectorAll('.jp-tab').forEach(tab => {
     tab.addEventListener('click', () => {
+      // Update tab states
       document.querySelectorAll('.jp-tab').forEach(t => {
         t.classList.remove('active');
         t.setAttribute('aria-selected', 'false');
@@ -717,32 +1799,130 @@ const pillars = data.pillars;
       tab.classList.add('active');
       tab.setAttribute('aria-selected', 'true');
 
-      const target = tab.dataset.pillar;
-      document.querySelectorAll('.jp-pillar').forEach(p => {
-        const active = p.id === `element-${target}`;
-        p.classList.toggle('active', active);
-        p.setAttribute('aria-hidden', active ? 'false' : 'true');
-      });
+      // Fade out current pillar
+      const currentPillar = document.querySelector('.jp-pillar.active');
+      if (currentPillar) {
+        currentPillar.style.opacity = '0';
+        currentPillar.style.transform = 'translateY(-8px)';
+        currentPillar.classList.remove('active');
+        currentPillar.setAttribute('aria-hidden', 'true');
+      }
 
-      observeCards();
+      // Show new pillar after brief pause
+      const targetId = `element-${tab.dataset.pillar}`;
+      const targetPillar = document.getElementById(targetId);
+      
+      setTimeout(() => {
+        if (targetPillar) {
+          targetPillar.style.opacity = '';
+          targetPillar.style.transform = '';
+          targetPillar.classList.add('active');
+          targetPillar.setAttribute('aria-hidden', 'false');
+          observeCards();
+          // Scroll to top of pillar
+          targetPillar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 120);
     });
   });
 
-  // Expand / collapse
-  document.querySelectorAll('.jp-card-toggle').forEach(btn => {
+  // ═══════════════════════════════════════════════════════════
+  // FULL-SCREEN CULTURAL MODAL
+  // ═══════════════════════════════════════════════════════════
+  const modal = document.getElementById('jp-modal');
+  const modalBackdrop = modal?.querySelector('.jp-modal-backdrop');
+  const modalClose = document.getElementById('jp-modal-close');
+  const modalPeriod = document.getElementById('jp-modal-period');
+  const modalEra = document.getElementById('jp-modal-era');
+  const modalTitle = document.getElementById('jp-modal-title');
+  const modalBody = document.getElementById('jp-modal-body');
+
+  function openModal(entry) {
+    if (!modal || !entry) return;
+    modalPeriod!.textContent = entry.period || '';
+    modalEra!.textContent = entry.era || '';
+    modalTitle!.textContent = entry.title || '';
+    // Render full content as paragraphs
+    const content = entry.content || '';
+    modalBody!.innerHTML = content.split('\n').filter(l => l.trim()).map(p => `<p>${p}</p>`).join('');
+    modal!.hidden = false;
+    document.body.style.overflow = 'hidden';
+    // Focus the close button for accessibility
+    setTimeout(() => modalClose?.focus(), 50);
+  }
+
+  function closeModal() {
+    if (!modal) return;
+    const panel = modal.querySelector('.jp-modal-panel');
+    panel?.classList.add('closing');
+    setTimeout(() => {
+      modal!.hidden = true;
+      panel?.classList.remove('closing');
+      document.body.style.overflow = '';
+    }, 280);
+  }
+
+  // Open modal when clicking "Read full entry" button
+  document.querySelectorAll('.jp-card-open').forEach(btn => {
     btn.addEventListener('click', () => {
-      const content = btn.closest('.jp-card').querySelector('.jp-card-content');
-      const open = btn.getAttribute('aria-expanded') === 'true';
-      content.hidden = open;
-      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
-      btn.querySelector('.jp-toggle-text').textContent = open ? 'Read more' : 'Read less';
+      const el = btn as HTMLElement;
+      openModal({
+        period: el.dataset.period || '',
+        era: el.dataset.era || '',
+        title: el.dataset.title || '',
+        content: el.dataset.content || '',
+      });
     });
   });
 
-  // Scroll animation
+  // Timeline nodes as modal triggers
+  document.querySelectorAll('.jp-timeline-node').forEach(node => {
+    const el = node as HTMLElement;
+    const handleOpen = () => {
+      openModal({
+        period: el.dataset.period || '',
+        era: el.dataset.era || '',
+        title: el.dataset.title || '',
+        content: el.dataset.content || '',
+      });
+    };
+    el.addEventListener('click', handleOpen);
+    el.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleOpen();
+      }
+    });
+  });
+
+  // Close modal handlers
+  modalClose?.addEventListener('click', closeModal);
+  modalBackdrop?.addEventListener('click', closeModal);
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal!.hidden) closeModal();
+  });
+
+  // Allow clicking card itself to open modal (except toggle button)
+  document.querySelectorAll('.jp-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      // Don't trigger if clicking the button directly
+      if (target.closest('.jp-card-open')) return;
+      const btn = card.querySelector('.jp-card-open') as HTMLElement | null;
+      if (btn) btn.click();
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // SCROLL ANIMATION — cards arrive like scrolls being unrolled
+  // ═══════════════════════════════════════════════════════════
   let observer;
+  
   function observeCards() {
     if (observer) observer.disconnect();
+    
     observer = new IntersectionObserver(entries => {
       entries.forEach(e => {
         if (e.isIntersecting) {
@@ -750,11 +1930,41 @@ const pillars = data.pillars;
           observer.unobserve(e.target);
         }
       });
-    }, { threshold: 0.08, rootMargin: '0px 0px -32px 0px' });
+    }, {
+    threshold: 0.05,
+    rootMargin: '0px 0px -20px 0px'
+    });
 
-    document.querySelectorAll('.jp-pillar.active .jp-card-wrap:not(.visible)')
-      .forEach(c => observer.observe(c));
+    const activePillar = document.querySelector('.jp-pillar.active');
+    if (activePillar) {
+      activePillar.querySelectorAll('.jp-card-wrap:not(.visible)')
+        .forEach((c, i) => {
+          // Stagger cards within same section
+          (c as HTMLElement).style.transitionDelay = `${i * 55}ms`;
+          observer.observe(c);
+        });
+    }
   }
 
+  // Initial observation
   observeCards();
+
+  // ═══════════════════════════════════════════════════════════
+  // SCROLL INDICATOR — fades as user scrolls
+  // ═══════════════════════════════════════════════════════════
+  const scrollIndicator = document.querySelector('.jp-hero-scroll');
+  if (scrollIndicator) {
+    window.addEventListener('scroll', () => {
+      const opacity = Math.max(0, 1 - window.scrollY / 180);
+      (scrollIndicator as HTMLElement).style.opacity = opacity.toString();
+    }, { passive: true });
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // PILLAR SECTION TRANSITIONS — smooth opacity
+  // ═══════════════════════════════════════════════════════════
+  // Make all pillars transition-ready
+  document.querySelectorAll('.jp-pillar').forEach(p => {
+    (p as HTMLElement).style.transition = 'opacity 0.28s var(--ease-departure), transform 0.28s var(--ease-departure)';
+  });
 </script>
